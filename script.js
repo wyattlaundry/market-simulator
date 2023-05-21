@@ -6,6 +6,9 @@ var client = null;
 var topic_root = "38674839685/tamu_energy_market_sim"
 var game = {"state":"uninitialized"}
 var connected = false;
+var dataChart = null;
+var userRevenue = [];
+var userProfits = [];
 
 function randomString(length) {
     var text = "";
@@ -13,6 +16,43 @@ function randomString(length) {
     for (var i = 0; i < length; i++)
         text += possible.charAt(Math.floor(Math.random() * possible.length));
     return text;
+}
+
+//Data Chart functions
+
+//Initialize the labels and set data (used by client as it is updated frequently)
+function updateUserChartData(chart, numPeriod) {
+
+  //Clear Labels
+  chart.data.labels = [];
+
+  //Set new labels to num of periods
+  for (var i = 0; i < numPeriod; i++)
+    chart.data.labels.push(i+1);
+
+  //Set data
+  chart.data.datasets[0].data = userRevenue;
+  chart.data.datasets[1].data = userProfits;
+
+
+  chart.update();
+}
+
+//Appends Data for every period
+function addData(chart, label, data) {
+  chart.data.labels.push(label);
+  chart.data.datasets.forEach((dataset) => {
+      dataset.data.push(data);
+  });
+  chart.update();
+}
+
+function removeData(chart) {
+    chart.data.labels.pop();
+    chart.data.datasets.forEach((dataset) => {
+        dataset.data.pop();
+    });
+    chart.update();
 }
 
 function onConnect_admin() {
@@ -446,11 +486,18 @@ function make_participant_list() {
     participants = document.getElementById("participant-table-body");
     participants.innerHTML = "";
 
+    //Hide profit chart if admin
+    if(user_type == 2){
+      chart_content = document.getElementById("dataChart");
+      chart_content.style.display = 'none';
+    }
+
     //Game info
     game.nplayers = 0;
     max_money = -99999;
     min_money = 99999;
 
+    //Add rows
     for (var key of Object.keys(game.players)) {
         player = game.players[key];
         game.nplayers += 1;
@@ -643,8 +690,13 @@ function make_period_list() {
         }
     }
 
+    //Clear Chart data - will be updated below
+    userProfits = [];
+    userRevenue = [];
+
     //Data
     for (var i = 0; i < game.options.num_periods; i++) {
+
         period = game.periods[i];
         tr = document.createElement("tr");
         td = document.createElement("td");
@@ -656,10 +708,15 @@ function make_period_list() {
         td = document.createElement("td");
         td.innerHTML = period.marginal_cost;
         tr.appendChild(td);
+
+        //Loop through each player
         for (var key of Object.keys(game.players)) {
+
+            //Only add data if relevant to current player or admin
             player = game.players[key];
             if (user_type == 2 || participant == player.id)
             {
+                //Add sum data to table
                 td = document.createElement("td");
                 td.innerHTML = period.players[key].revenue;
                 tr.appendChild(td);
@@ -672,6 +729,19 @@ function make_period_list() {
                 td = document.createElement("td");
                 td.innerHTML = period.players[key].money;
                 tr.appendChild(td);
+
+                //Add sum data to chart only if normal user
+                if (user_type != 2){
+                  userProfits.push(period.players[key].profit);
+                  userRevenue.push(period.players[key].revenue);
+                }
+                //If Admin
+                else{
+
+
+
+                }
+
             }
         }
         for (var key of Object.keys(game.gens)) {
@@ -688,6 +758,8 @@ function make_period_list() {
         }
         period_data.appendChild(tr);
     }
+
+    updateUserChartData(dataChart, game.options.num_periods);
 
 }
 
@@ -912,6 +984,59 @@ function startup() {
 
     update();
     setInterval(update, 1000);
+
+    //Initialize chart
+    const ctx = document.getElementById('dataChart');
+
+    dataChart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: [1, 2, 3, 4, 5, 6, 7, 8, 9 ,10, 11, 12],
+        datasets: [
+          {
+            label: 'Revenue',
+            data: [],
+            borderWidth: 1,
+            tension: 0.1
+          },
+          {
+            label: 'Profit',
+            data: [],
+            borderWidth: 1,
+            tension: 0.1
+          }
+        ],
+      },
+
+      options: {
+
+        scales: {
+
+          y: {
+
+                title: {
+                  display: true,
+                  text: 'Period Money'
+                },
+                ticks: {
+                    callback: function(value, index, values) {return '$' + value;}
+                }
+
+          },
+
+          x: {
+
+                title: {
+                  display: true,
+                  text: 'Period Number'
+                }
+
+          }
+
+        }
+
+      }
+    });
 }
 
 document.onload = startup();
