@@ -609,8 +609,8 @@ function make_participant_list() {
 
 function submit_offers() {
 
-    //Disable offer Button
-    document.getElementById("submit-offer-button").classList.add("disabled");
+    //Disable offer Button - Enable this line if you want to allow only one offer
+    //document.getElementById("submit-offer-button").classList.add("disabled");
 
     topic_offers = topic_root + "/" + market + "/offers"
     var message_obj = {};
