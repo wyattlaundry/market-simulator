@@ -3,6 +3,8 @@ var user_type = 0;
 var market = null;
 var participant = null;
 var client = null;
+var mqtt_host = "broker.hivemq.com";
+var mqtt_port = 8884;
 var topic_root = "38674839685/tamu_energy_market_sim"
 var game = {"state":"uninitialized"}
 var connected = false;
@@ -421,17 +423,15 @@ function make_login_form() {
 }
 
 function connect_client_admin() {
-    host = "broker.mqttdashboard.com"
-    port = 8000
     clientId = "client-" + randomString(10)
-    client = new Messaging.Client(host, port, clientId);
+    client = new Messaging.Client(mqtt_host, mqtt_port, clientId);
     client.onConnectionLost = connLost;
     client.onMessageArrived = messageArr_admin;
     var options = {
         timeout: 3,
         keepAliveInterval: 60,
         cleanSession: true,
-        useSSL: false,
+        useSSL: true,
         onSuccess: onConnect_admin,
         onFailure: onFail
     };
@@ -441,17 +441,15 @@ function connect_client_admin() {
 }
 
 function connect_client_participant() {
-    host = "broker.mqttdashboard.com"
-    port = 8000
     clientId = "client-" + randomString(10)
-    client = new Messaging.Client(host, port, clientId);
+    client = new Messaging.Client(mqtt_host, mqtt_port, clientId);
     client.onConnectionLost = connLost;
     client.onMessageArrived = messageArr_participant;
     var options = {
         timeout: 3,
         keepAliveInterval: 60,
         cleanSession: true,
-        useSSL: false,
+        useSSL: true,
         onSuccess: onConnect_participant,
         onFailure: onFail
     };
@@ -923,7 +921,7 @@ function make_game_admin_options() {
 }
 
 function update() {
-    debug_text = "Debug: "
+    debug_text = "Debug: ";
     if (!connected)
     {
         debug_text += " | not connected";
@@ -944,15 +942,14 @@ function update() {
                 advance_period();
             }
         }
+
         if (connected)
-        {
             send_game_state();
-        }
+        
     }
     else if (user_type == 3)
-    {
         debug_text += " | participant";
-    }
+    
     debug_text += " | Update count: " + update_count;
     debug_text += " | Market: " + market
     debug_text += " | Participant: " + participant
