@@ -412,7 +412,7 @@ function make_registration_head() {
 
     //Assign Market Name
     market_info = document.getElementById("market-name");
-    market_info.innerHTML = market.toUpperCase()
+    market_info.innerHTML = market;
 
 }
 
