@@ -3,8 +3,15 @@ var user_type = 0;
 var market = null;
 var participant = null;
 var client = null;
-var mqtt_host = "broker.hivemq.com";
+
+// This information occasionally needs to be updated if the server refuses to connect
+// Accounts are free
+var mqtt_host = "cc2d539af7de4d309fa42416cd73eef0.s1.eu.hivemq.cloud";
 var mqtt_port = 8884;
+var mqtt_userName = "hivemq.webclient.1741788591725";
+var mqtt_password = "534%0QTH.E,>RSmozgfc";
+
+
 var topic_root = "38674839685/tamu_energy_market_sim"
 var game = {"state":"uninitialized"}
 var connected = false;
@@ -433,6 +440,8 @@ function connect_client_admin() {
         cleanSession: true,
         useSSL: true,
         onSuccess: onConnect_admin,
+	userName: mqtt_userName,
+        password: mqtt_password,
         onFailure: onFail
     };
     connected = false;
@@ -451,6 +460,8 @@ function connect_client_participant() {
         cleanSession: true,
         useSSL: true,
         onSuccess: onConnect_participant,
+	userName: mqtt_userName,
+        password: mqtt_password,
         onFailure: onFail
     };
     connected = false;
